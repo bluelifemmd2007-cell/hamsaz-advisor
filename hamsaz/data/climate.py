@@ -1,11 +1,3 @@
-"""Simplified, Koeppen-inspired climate zone reference data.
-
-Real climate classification has dozens of sub-types; this module collapses
-them into eleven practically-distinct zones that are enough to drive real
-buying decisions (clothing, vehicles, housing, devices) without pretending
-to be a meteorological authority. Numbers are representative averages for
-the zone, not a forecast for any single city.
-"""
 from __future__ import annotations
 
 from dataclasses import dataclass
