@@ -1,9 +1,3 @@
-"""Display metadata for budget tiers and computer/device use cases.
-
-These dictionaries drive both the web form and the recommendation engine,
-so the keys here must always match ``hamsaz.engine.models.BUDGET_TIERS``
-and ``hamsaz.engine.models.USE_CASES``.
-"""
 from __future__ import annotations
 
 from collections import OrderedDict
