@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hamsaz - buy right for where you live{% endblock %}</title>
+  <meta name="description" content="A location-aware buying advisor: clothing, cars, housing, digital devices, and computer systems, tailored to your climate and budget.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap masthead-inner">
+      <a href="{{ url_for('index') }}" class="brand" style="text-decoration:none; color:inherit;">
+        <span class="brand-mark">HZ</span>
+        <div>
+          <h1>Hamsaz</h1>
+          <p class="tagline">A field guide to buying right, wherever you live.</p>
+        </div>
+      </a>
+      <div class="masthead-meta label">
+        vol. 01 &middot; climate &amp; budget edition
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer>
+    <div class="wrap footer-grid">
+      <div>
+        <strong>Hamsaz</strong> &mdash; a rule-based buying advisor.<br>
+        Built with Python + Flask. No accounts, no tracking, no external APIs.
+      </div>
+      <div>
+        <a href="{{ url_for('index') }}">Start over</a> &middot;
+        <a href="{{ url_for('api_locations') }}">/api/locations</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

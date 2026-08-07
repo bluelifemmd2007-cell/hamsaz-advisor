@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="intro-grid">
+  <div class="intro-col">
+    <h2>How this works</h2>
+    <ol>
+      <li>Pick your city (or describe your own location by hand).</li>
+      <li>Tell us your financial comfort level - one honest answer covers all five categories.</li>
+      <li>Pick what you'd mainly use a computer for.</li>
+      <li>Get a five-part report: clothing, car, housing, digital devices, and a full computer-buying breakdown.</li>
+    </ol>
+
+    <div class="disclaimer-box">
+      <strong>What this is (and isn't):</strong> Hamsaz is a rule-based advisor
+      built from general climate science and buying know-how. Cost-of-living
+      and climate figures are indicative approximations for comparison, not
+      live data. Treat this as a well-informed starting point, not financial,
+      safety, or engineering advice.
+    </div>
+  </div>
+
+  <div>
+    {% if error %}
+      <div class="error-banner">{{ error }}</div>
+    {% endif %}
+
+    <form class="dossier" method="post" action="{{ url_for('results') }}" id="advisor-form">
+
+      <div class="step">
+        <div class="step-heading">
+          <span class="step-number">01</span>
+          <div>
+            <h3>Where do you live?</h3>
+            <p>Search the list, or describe your own location if it isn't covered.</p>
+          </div>
+        </div>
+
+        <div class="location-picker">
+          <input
+            type="search"
+            id="location-search"
+            placeholder="Type a city or country to search…"
+            autocomplete="off"
+          >
+          <div id="location-results" class="location-results" hidden></div>
+        </div>
+
+        <select id="location-select" name="location" required>
+          <option value="" disabled {% if not form.get('location') %}selected{% endif %}>Select a city…</option>
+          <option value="custom" {% if form.get('location') == 'custom' %}selected{% endif %}>My city isn't listed - let me describe it</option>
+          {% for country, cities in countries.items() %}
+            <optgroup label="{{ country }}">
+              {% for city in cities %}
+                <option value="{{ city.key }}" {% if form.get('location') == city.key %}selected{% endif %}>{{ city.name }}</option>
+              {% endfor %}
+            </optgroup>
+          {% endfor %}
+        </select>
+        <p class="hint" id="selected-location-hint"></p>
+
+        <div id="custom-fields" hidden>
+          <div class="field-row">
+            <div>
+              <label for="custom_name">What should we call this place?</label>
+              <input type="text" id="custom_name" name="custom_name" placeholder="e.g. My hometown" value="{{ form.get('custom_name', '') }}">
+            </div>
+            <div>
+              <label for="custom_climate">Closest climate description</label>
+              <select id="custom_climate" name="custom_climate">
+                <option value="">Choose the closest match…</option>
+                {% for key, zone in climate_zones.items() %}
+                  <option value="{{ key }}" {% if form.get('custom_climate') == key %}selected{% endif %}>{{ zone.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div>
+              <label for="custom_col">Rough cost of living (New York City = 100)</label>
+              <input type="number" id="custom_col" name="custom_col" min="1" max="300" value="{{ form.get('custom_col', 100) }}">
+              <p class="hint">Not sure? Leave the default - it only affects contextual notes, not the core advice.</p>
+            </div>
+            <div>
+              <label for="custom_air_quality">Typical outdoor air quality</label>
+              <select id="custom_air_quality" name="custom_air_quality">
+                <option value="good" {% if form.get('custom_air_quality') == 'good' %}selected{% endif %}>Good</option>
+                <option value="moderate" {% if form.get('custom_air_quality', 'moderate') == 'moderate' %}selected{% endif %}>Moderate</option>
+                <option value="poor" {% if form.get('custom_air_quality') == 'poor' %}selected{% endif %}>Poor</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div>
+              <label for="custom_grid_reliability">Electrical grid reliability</label>
+              <select id="custom_grid_reliability" name="custom_grid_reliability">
+                <option value="stable" {% if form.get('custom_grid_reliability', 'stable') == 'stable' %}selected{% endif %}>Stable - outages are rare</option>
+                <option value="variable" {% if form.get('custom_grid_reliability') == 'variable' %}selected{% endif %}>Variable - occasional outages</option>
+                <option value="unstable" {% if form.get('custom_grid_reliability') == 'unstable' %}selected{% endif %}>Unstable - frequent outages</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="checkbox-row">
+            <input type="checkbox" id="custom_coastal" name="custom_coastal" {% if form.get('custom_coastal') %}checked{% endif %}>
+            <label for="custom_coastal">Coastal (salt air, humidity from the sea)</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="custom_storm_risk" name="custom_storm_risk" {% if form.get('custom_storm_risk') %}checked{% endif %}>
+            <label for="custom_storm_risk">Exposed to hurricanes / typhoons / cyclones</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="custom_seismic_risk" name="custom_seismic_risk" {% if form.get('custom_seismic_risk') %}checked{% endif %}>
+            <label for="custom_seismic_risk">Located in an earthquake-prone region</label>
+          </div>
+          <div class="checkbox-row">
+            <input type="checkbox" id="custom_highland" name="custom_highland" {% if form.get('custom_highland') %}checked{% endif %}>
+            <label for="custom_highland">High elevation (roughly 1,500m / 5,000ft or more)</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-heading">
+          <span class="step-number">02</span>
+          <div>
+            <h3>What's your financial comfort level?</h3>
+            <p>This single answer scales every recommendation below, from clothes to houses.</p>
+          </div>
+        </div>
+
+        <div class="radio-cards">
+          {% for key, tier in budget_tiers.items() %}
+            <label class="radio-card">
+              <input type="radio" name="budget_tier" value="{{ key }}" {% if form.get('budget_tier', 'balanced') == key %}checked{% endif %} required>
+              <span class="tier-label">{{ tier.label }}</span>
+              <span class="tier-desc">{{ tier.description }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-heading">
+          <span class="step-number">03</span>
+          <div>
+            <h3>What would you mainly use a computer for?</h3>
+            <p>This drives the detailed computer-buying section only.</p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div>
+            <select id="use_case" name="use_case">
+              {% for key, desc in use_cases.items() %}
+                <option value="{{ key }}" {% if form.get('use_case', 'general') == key %}selected{% endif %}>{{ desc }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-heading">
+          <span class="step-number">04</span>
+          <div>
+            <h3>A little about your household</h3>
+            <p>Optional, but it sharpens the housing and vehicle advice.</p>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div>
+            <label for="household_size">Household size</label>
+            <input type="number" id="household_size" name="household_size" min="1" max="12" value="{{ form.get('household_size', 1) }}">
+          </div>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="has_children" name="has_children" {% if form.get('has_children') %}checked{% endif %}>
+          <label for="has_children">There are children in the household</label>
+        </div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="primary">Build my report</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

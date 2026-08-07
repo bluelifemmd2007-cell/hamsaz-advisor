@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Your report - Hamsaz{% endblock %}
+
+{% block content %}
+<div class="report-header">
+  <p class="label">Advisory report</p>
+  <h2>{{ report.profile.location_name }}</h2>
+  <p class="climate-desc">{{ climate.name }} &mdash; {{ climate.description }}</p>
+
+  <div class="report-stamp">
+    <span class="stamp accent">{{ budget_tiers[report.profile.budget_tier].label }}</span>
+    <span class="stamp accent-2">{{ climate.name }}</span>
+    <span class="stamp">Summer avg high {{ climate.summer_high_c }}&deg;C</span>
+    <span class="stamp">Winter avg low {{ climate.winter_low_c }}&deg;C</span>
+    {% if report.profile.seismic_risk %}<span class="stamp">Seismic zone</span>{% endif %}
+    {% if report.profile.storm_risk %}<span class="stamp">Storm-exposed</span>{% endif %}
+    {% if report.profile.coastal %}<span class="stamp">Coastal</span>{% endif %}
+    {% if report.profile.grid_reliability != "stable" %}<span class="stamp">Grid: {{ report.profile.grid_reliability }}</span>{% endif %}
+    {% if report.profile.air_quality != "good" %}<span class="stamp">Air quality: {{ report.profile.air_quality }}</span>{% endif %}
+  </div>
+</div>
+
+{% set sections = [
+  ("01", report.clothing),
+  ("02", report.vehicle),
+  ("03", report.housing),
+  ("04", report.devices),
+  ("05", report.computer)
+] %}
+
+{% for index, rec in sections %}
+<section class="section">
+  <div class="section-heading">
+    <span class="section-index">{{ index }}</span>
+    <h3>{{ rec.headline }}</h3>
+  </div>
+  <p class="section-summary">{{ rec.summary }}</p>
+
+  <div class="rec-columns">
+    <div class="picks">
+      <h4>Recommended</h4>
+      <ul>
+        {% for item in rec.picks %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% if rec.avoid %}
+    <div class="rec-columns avoid">
+      <h4>Avoid</h4>
+      <ul>
+        {% for item in rec.avoid %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if rec.tips %}
+  <div class="tips-block">
+    <h4>Notes &amp; context</h4>
+    <ul>
+      {% for tip in rec.tips %}
+        <li>{{ tip }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
+
+<div class="report-actions">
+  <a class="btn-link" href="{{ url_for('index') }}">&larr; Build another report</a>
+  <a class="btn-link" href="javascript:window.print()">Print / save as PDF</a>
+</div>
+{% endblock %}
